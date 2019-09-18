@@ -14,7 +14,8 @@ const int LORA_MOSI_PIN = 27;
 const int LORA_SS_PIN = 18;
 const int LORA_RST_PIN = 14;
 const int LORA_DI00_PIN = 26;
-
+String localAddress; // endereço deste dipositivo
+String endBroadcast = ; // endereço de broadcast
 
 WiFiServer sv(8080); //Cria o objeto servidor na porta 555
 WiFiClient cl;  
@@ -93,19 +94,13 @@ void onReceive(int packetSize) {
  
 
 
-  if (macMes != localAddress && macMes != 0xFF) {
-    Serial.println("This message is not for me.");
+  if (macMes != localAddress && macMes != endBroadcast) {
+    Serial.println("Esta mensagem nao e pra mim.");
     return;                             // skip rest of function
   }
 
-  // if message is for this device, or broadcast, print details:
-  Serial.println("Received from: 0x" + String(sender, HEX));
-  Serial.println("Sent to: 0x" + String(recipient, HEX));
-  Serial.println("Message ID: " + String(incomingMsgId));
-  Serial.println("Message length: " + String(incomingLength));
-  Serial.println("Message: " + incoming);
-  Serial.println("RSSI: " + String(LoRa.packetRssi()));
-  Serial.println("Snr: " + String(LoRa.packetSnr()));
+  
+  Serial.println("Mensagem:"+incoming);
   Serial.println();
 }
 
@@ -135,7 +130,7 @@ void setup() {
   display.clear();
   display.drawString(0, 0, "" + String(MAC_LOCAL));
   display.drawString(0, 16, "Novo: " + String(Mac_Local_Full));
-  display.drawString(0, 32, "[ESP - AR COND]");
+  display.drawString(0, 32, "[ ESP - AR COND]");
   display.display();
   LoRa.onReceive(onReceive);
   LoRa.receive();
