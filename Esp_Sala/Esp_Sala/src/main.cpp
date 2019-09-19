@@ -19,6 +19,8 @@ const int LORA_DI00_PIN = 26;
 String localAddress; // endereço deste dipositivo
 String endBroadcast = "0xE117" ; // endereço de broadcast
 
+String Mac_Local_Full, MAC_LOCAL;
+
 //variaveis que indicam o núcleo
 static uint8_t taskCoreZero = 0;
 static uint8_t taskCoreOne = 1;
@@ -67,7 +69,7 @@ void mac(){
   ////////////////////////////////////////
   // Convertendo o MAC para MAC byte
   ////////////////////////////////////////
-  String MAC_LOCAL = WiFi.macAddress();
+  MAC_LOCAL = WiFi.macAddress();
   char ChMacLocal[18];
   String(MAC_LOCAL).toCharArray(ChMacLocal, 18);
   char *InfoMacLocal[6];
@@ -77,7 +79,7 @@ void mac(){
   InfoMacLocal[3] = strtok(NULL, ":");
   InfoMacLocal[4] = strtok(NULL, ":");
   InfoMacLocal[5] = strtok(NULL, ":");
-  String Mac_Local_Full;
+  
   for (int s = 0; s < 6; s++)
   {
     Mac_Local_Full += InfoMacLocal[s];
@@ -134,8 +136,8 @@ void onReceive(int packetSize) {
   infoIncoming[2] = strtok(NULL, "!");
   String macMes = infoIncoming[0];
   String comando = infoIncoming[1];
-  int valorComando ;
-  infoIncoming[2].toInt(valorComando);
+  
+  int valorComando = atoi(infoIncoming[2]);
  
   Serial.println("Mensagem: "+incoming);
   Serial.println();
@@ -153,7 +155,7 @@ void onReceive(int packetSize) {
 void setup() {
   setupDisplay();
   delay(3000); //Aguarda 3 segundos
-  SCT013.current(pinSCT, 5.4);
+  //SCT013.current(pinSCT, 5.4);
   Serial.begin(115200);
 
   LoRa.setPins(18, 14, 26);
