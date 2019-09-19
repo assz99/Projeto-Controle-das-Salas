@@ -1,8 +1,10 @@
+#include <LoRa.h>
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <SSD1306.h>
 #include <SPI.h>
-#include <Lora.h>
+
 
 #define SSID "Sala-IFMT"
 #define PASSWORD "lab@26"
@@ -15,10 +17,21 @@ const int LORA_SS_PIN = 18;
 const int LORA_RST_PIN = 14;
 const int LORA_DI00_PIN = 26;
 String localAddress; // endereço deste dipositivo
-String endBroadcast = ; // endereço de broadcast
+String endBroadcast = "0xE117" ; // endereço de broadcast
+
+//variaveis que indicam o núcleo
+static uint8_t taskCoreZero = 0;
+static uint8_t taskCoreOne = 1;
 
 WiFiServer sv(8080); //Cria o objeto servidor na porta 555
 WiFiClient cl;  
+
+//Variável para controlar o display
+const int DISPLAY_ADDRESS_PIN = 0x3c;
+const int DISPLAY_SDA_PIN = 4;
+const int DISPLAY_SCL_PIN = 15;
+const int DISPLAY_RST_PIN = 16;
+SSD1306 display(DISPLAY_ADDRESS_PIN, DISPLAY_SDA_PIN, DISPLAY_SCL_PIN);
 
 void setupDisplay()
 {
@@ -70,9 +83,40 @@ void mac(){
     Mac_Local_Full += InfoMacLocal[s];
   }
   localAddress = Mac_Local_Full;
-
+ 
 
 }
+
+void core(){
+
+delay(500); //tempo para a tarefa iniciar
+
+  //cria uma tarefa que será executada na função coreTaskOne, com prioridade 2 e execução no núcleo 1
+  //coreTaskOne: atualizar as informações do display
+  // xTaskCreatePinnedToCore(
+  //  Proto_Socket,   /* função que implementa a tarefa */
+  //  "Proto_Socket", /* nome da tarefa */
+  //   10000,      /* número de palavras a serem alocadas para uso com a pilha da tarefa */
+  //   NULL,       /* parâmetro de entrada para a tarefa (pode ser NULL) */
+  // 1,          /* prioridade da tarefa (0 a N) */
+  // NULL,       /* referência para a tarefa (pode ser NULL) */
+  // taskCoreOne);         /* Núcleo que executará a tarefa */
+
+  delay(500); //tempo para a tarefa iniciar
+
+  //cria uma tarefa que será executada na função coreTaskTwo, com prioridade 2 e execução no núcleo 0
+  //coreTaskTwo: vigiar o botão para detectar quando pressioná-lo
+  //xTaskCreatePinnedToCore(
+    //Comunicacao_Server,   /* função que implementa a tarefa */
+    //"Comunicacao_Server", /* nome da tarefa */
+   // 10000,                /* número de palavras a serem alocadas para uso com a pilha da tarefa */
+   // NULL,                 /* parâmetro de entrada para a tarefa (pode ser NULL) */
+   // 1,                    /* prioridade da tarefa (0 a N) */
+   // NULL,                 /* referência para a tarefa (pode ser NULL) */
+   // taskCoreZero);*/        /* Núcleo que executará a tarefa */
+}
+
+
 
 void onReceive(int packetSize) {
   if (packetSize == 0) return;          // Se nao tiver um pacote, sai
@@ -90,18 +134,19 @@ void onReceive(int packetSize) {
   infoIncoming[2] = strtok(NULL, "!");
   String macMes = infoIncoming[0];
   String comando = infoIncoming[1];
-  int valorComando = infoIncoming[2];
+  int valorComando ;
+  infoIncoming[2].toInt(valorComando);
  
-
+  Serial.println("Mensagem: "+incoming);
+  Serial.println();
 
   if (macMes != localAddress && macMes != endBroadcast) {
     Serial.println("Esta mensagem nao e pra mim.");
     return;                             // skip rest of function
   }
 
+  core();
   
-  Serial.println("Mensagem:"+incoming);
-  Serial.println();
 }
 
 
@@ -135,6 +180,54 @@ void setup() {
   LoRa.onReceive(onReceive);
   LoRa.receive();
  
+}
+
+void enviar_Mensagem(String mensagem){
+  LoRa.beginPacket();            // Inicia o pacote da mensagem
+  LoRa.write(mensagem.length()); // Tamanho da mensagem em bytes
+  LoRa.print(mensagem);          // Vetor da mensagem
+  LoRa.endPacket();              // Finaliza o pacote e envia
+  Serial.println(mensagem);
+}
+
+
+
+void Proto_Socket() // funcao para receber as informaçoes do celular
+{
+  while (true)
+  {
+
+    //Note the approach used to automatically calculate the size of the array.
+    if (cl.connected()) //Detecta se há clientes conectados no servidor.
+    {
+      if (cl.available() > 0) //Verifica se o cliente conectado tem dados para serem lidos.
+      {
+        String req = "";
+        while (cl.available() > 0) //Armazena cada Byte (letra/char) na String para formar a mensagem recebida.
+        {
+          char z = cl.read();
+          req += z;
+        }
+        
+        //Envia uma resposta para o cliente
+        cl.print("\nO servidor recebeu sua mensagem");
+        cl.print("\n...Seu IP: ");
+        cl.print(cl.remoteIP());
+        cl.print("\n...IP do Servidor: ");
+        cl.print(WiFi.softAPIP());
+        cl.print("\n...Sua mensagem: " + req + "\n");
+
+        enviar_Mensagem(req);
+
+      }
+    }
+    else //Se nao houver cliente conectado,
+    {
+      cl = sv.available(); //Disponabiliza o servidor para o cliente se conectar.
+      delay(1);
+    }
+    //req
+  }
 }
 
 void loop() {
