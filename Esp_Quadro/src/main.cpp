@@ -4,7 +4,7 @@
 
 
 void setup() {
-  Serial.begin;
+  Serial.begin(9600);
   QueueList<int> c = QueueList<int>();
   c.push(1);
   c.push(2);
