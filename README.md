@@ -11,13 +11,13 @@ Caminho para adicionar bibliotecas e arquivo do visual code para editar.
 
 
 
-Comandos Banco -> quadro:
+## <b>Comandos Banco -> quadro:</b>
 
 macDoQuadro!nomeSala!valor(0 ou 1)
 
 "0" para desligar a sala e "1" para ligar a sala
 
-Comandos Banco -> Sala:
+## <b>Comandos Banco -> Sala:</b>
 
 macDaSala!comando!valor
 
@@ -25,7 +25,7 @@ SE o comando for "rt" = {"2"-"3" para desligar e ligar ar} e {"17 até 27" para 
 
 SE o comando for "t" = {"5" - "10" - "15" - "30"} 
 
-Comandos Sala -> Banco:
+## <b>Comandos Sala -> Banco:</b>
 
 macPadraoDoReceiver!macLocal!temperatura!humidade!corrente!potencia!kwh
 
