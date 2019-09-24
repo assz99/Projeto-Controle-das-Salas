@@ -86,6 +86,13 @@ bool loraBegin(){
 }
 
 void onReceive(int packetSize){
+  /*
+    O recebimento funciona com o envio de um pacote de duas linhas (mensagem)
+    A primeira linha é sempre o tamanho da mensagem
+    A segunda é o conteudo da mensagem, como método de seguranca
+    para garantir que todo o pacote chegou.  
+  */
+  
   if( packetSize == 0 ) return;  // se nenhuma mensagem foi recebida sai da funcao
   byte incomingLength = LoRa.read(); // tamanho da mensagem
   String incoming = "";
@@ -105,6 +112,7 @@ void onReceive(int packetSize){
   addressWeb += incoming;
   msg = addressWeb;
   travaSite = 1;
+
 }
 
 void setup(){
