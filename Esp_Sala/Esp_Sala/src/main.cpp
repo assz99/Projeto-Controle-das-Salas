@@ -225,7 +225,7 @@ void onReceive(int packetSize) {
     Serial.println("Esta mensagem nao e pra mim.");
     return;                             // skip rest of function
   }
-  if(comando == "t"){
+  if(comando == "rt"){
     comando_ar(valorComando);
   }
 }
