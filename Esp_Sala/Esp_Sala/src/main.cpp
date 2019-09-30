@@ -5,11 +5,11 @@
 #include <WiFi.h>
 #include <SSD1306.h>
 #include <SPI.h>
-
+#include <SimpleDHT.h>
 
 #define SSID "Sala-IFMT"
 #define PASSWORD "lab@26"
-#define BAND 916E6 //Frequencia da rede LoRa em 916 MHz
+#define BAND 921E6 //Frequencia da rede LoRa em 916 MHz
 
 const int LORA_SCK_PIN = 5;
 const int LORA_MISO_PIN = 19;
@@ -19,7 +19,6 @@ const int LORA_RST_PIN = 14;
 const int LORA_DI00_PIN = 26;
 String localAddress; // endereço deste dipositivo
 String endBroadcast = "0xE117" ; // endereço de broadcast
-
 String Mac_Local_Full, MAC_LOCAL;
 
 //variaveis que indicam o núcleo
@@ -28,6 +27,36 @@ String Mac_Local_Full, MAC_LOCAL;
 
 WiFiServer sv(8080); //Cria o objeto servidor na porta 555
 WiFiClient cl;  
+
+////////////////////////////// EmonLib
+
+double Irms;    // CORRENTE MEDIDA
+
+EnergyMonitor SCT013;
+
+int pinSCT = A0; //Pino analógico conectado ao SCT-013 36
+
+int tensao = 220; // TENSÃO NOMINAL
+
+int potencia; // POTENCIA CALCULADA
+
+/////////////////////////
+
+//Cria variaveis globais
+double kwhTotal=0;
+double kwhTotal_Acc=0;
+double vlreais;
+double vlreais_Acc;
+double realPower = tensao * sqrt(2);
+unsigned long ltmillis, tmillis, timems;
+float humidade;
+float temperatura;
+int estado = 0;
+unsigned long ultimoenvio = 1500;
+String mensagem;
+int c = 0;
+String info;
+int temp_ar = 20;
 
 //Variável para controlar o display
 const int DISPLAY_ADDRESS_PIN = 0x3c;
@@ -55,7 +84,14 @@ unsigned int ar25[] = {3050,1550, 550,1050, 500,1050, 500,300, 550,250, 550,300,
 unsigned int ar26[] = {3050,1600, 500,1050, 500,1050, 500,300, 550,300, 500,300, 500,1050, 500,300, 550,300, 500,1050, 500,1050, 500,300, 550,1050, 500,300, 500,300, 500,1050, 550,1050, 500,300, 500,1050, 500,1050, 550,300, 500,300, 500,1050, 500,300, 500,300, 550,1050, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,1050, 500,300, 500,300, 550,1050, 500,300, 500,300, 500,1050, 550,1050, 500,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,1050, 500,300, 550,1050, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,1050, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 500,350, 500,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 500,350, 500,300, 500,300, 500,1050, 500,1100, 500,300, 500,300, 500,300, 500,350, 500,300, 500,300, 500,300, 500};  
 unsigned int ar27[] ={3050,1550, 500,1050, 550,1050, 500,300, 500,300, 500,300, 550,1050, 500,300, 500,300, 500,1050, 550,1050, 500,300, 500,1050, 500,300, 550,300, 500,1050, 500,1050, 500,300, 550,1050, 500,1050, 500,300, 500,300, 550,1050, 500,300, 500,300, 500,1050, 550,300, 500,300, 500,300, 500,300, 550,250, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,1000, 550,300, 500,300, 500,1050, 500,300, 550,300, 500,1050, 500,1050, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,1050, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,250, 550,300, 500,300, 500,1050, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,250, 550,300, 500,1050, 500,300, 500,300, 550,300, 500,300, 500,300, 500,300, 550,300, 500,300, 500};  
 ///////////////////////////
+/////Variaveis de tempo
 
+int interval = 1;
+int intervall; // Intervalo em ms no envio das mensagens (inicial 5s)
+int intervald;
+long lastSendTime = 0;   // TimeStamp da ultima mensagem enviada
+
+/////////////////////////////////////
 
 void setupDisplay()
 {
@@ -140,14 +176,30 @@ delay(500); //tempo para a tarefa iniciar
    // taskCoreZero);*/        /* Núcleo que executará a tarefa */
 }
 
+void temp_DHT()
+{
+
+  int err = SimpleDHTErrSuccess;
+
+  if ((err = dht22.read2(&temperatura, &humidade, NULL)) != SimpleDHTErrSuccess)
+  {
+    Serial.print("Read DHT22 failed, err=");
+    Serial.println(err);
+  }
+  Serial.print(temperatura);
+  Serial.print(" *C, ");
+  Serial.print(humidade);
+  Serial.println(" RH%");
+}
+
 void comando_ar(int cmd){
     switch (cmd)
   {
-    case (2):
+    case 2:
       Serial.println("Desliga o Ar");
       irsend.sendRaw(desliga, sizeof(desliga) / sizeof(desliga[0]), khz);
       break;
-    case (3):
+    case 3:
       irsend.sendRaw(liga, sizeof(liga) / sizeof(liga[0]), khz);
       break;   
     case 17:
@@ -202,21 +254,28 @@ void comando_ar(int cmd){
 
 void onReceive(int packetSize) {
   if (packetSize == 0) return;          // Se nao tiver um pacote, sai
-  
+  byte incomingLength = LoRa.read();
   String incoming = "";                 // variavel para o pacote
   while (LoRa.available()) {            // can't use readString() in callback, so
     incoming += (char)LoRa.read();      // add bytes one by one
   }
+  if (incomingLength != incoming.length())
+  {
+    // checa se chegou toda a mensagem
+    Serial.println("erro!: o tamanho da mensagem nao condiz com o conteudo!");
+    return;
+  }
 
-  char chIncoming[30];
-  String(incoming).toCharArray(chIncoming, 30);
+
+  char chIncoming[50];
+  String(incoming).toCharArray(chIncoming, 50);
   char *infoIncoming[3];
   infoIncoming[0] = strtok(chIncoming, "!");
   infoIncoming[1] = strtok(NULL, "!");
   infoIncoming[2] = strtok(NULL, "!");
-  String macMes = infoIncoming[0];
-  String comando = infoIncoming[1]; 
-  int valorComando = atoi(infoIncoming[2]);
+  String macMes = String(infoIncoming[0]);
+  String comando = String(infoIncoming[1]); 
+  int valorComando = String(infoIncoming[2]).toInt();
  
   Serial.println("Mensagem: "+incoming);
   Serial.println();
@@ -227,6 +286,7 @@ void onReceive(int packetSize) {
   }
   if(comando == "rt"){
     comando_ar(valorComando);
+
   }
 }
   
@@ -262,17 +322,28 @@ void setup() {
   display.drawString(0, 32, "[ ESP - AR COND]");
   display.display();
   LoRa.onReceive(onReceive); // Seta o callback
-  LoRa.receive(); // Coloca em modo reveiver
+  LoRa_rxMode(); // Coloca em modo reveiver
   core();
 }
 
+void LoRa_rxMode(){
+  LoRa.enableInvertIQ();                // active invert I and Q signals
+  LoRa.receive();                       // set receive mode
+}
+
+void LoRa_txMode(){
+  LoRa.idle();                          // set standby mode
+  LoRa.disableInvertIQ();               // normal mode
+}
+
 void enviar_Mensagem(String mensagem){
+  LoRa_txMode();
   LoRa.beginPacket();            // Inicia o pacote da mensagem
   LoRa.write(mensagem.length()); // Tamanho da mensagem em bytes
   LoRa.print(mensagem);          // Vetor da mensagem
-  LoRa.endPacket();              // Finaliza o pacote e envia
+  LoRa.enmdPacket();              // Finaliza o pacote e envia
   Serial.println(mensagem);
-  LoRa.receive();
+  LoRa_rxMode();
 }
 
 
@@ -316,5 +387,5 @@ void Proto_Socket() // funcao para receber as informaçoes do celular
 }
 
 void loop() {
-
+  Proto_Socket();
 }
