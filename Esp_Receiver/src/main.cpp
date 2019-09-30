@@ -76,6 +76,13 @@ void setupDisplay(){
   display.setTextAlignment(TEXT_ALIGN_LEFT);
 }
 
+void LoRa_rxMode(){
+  /* O gateway será composto do sender e receiver essa funcao e responsavel
+  por setar o esp32 para que ele apenas receba informacoes */
+  LoRa.disableInvertIQ();
+  LoRa.receive();
+}
+
 bool loraBegin(){
   // Inicializacao da comunicacao SPI
   SPI.begin(LORA_SCK_PIN, LORA_MISO_PIN, LORA_MOSI_PIN, LORA_SS_PIN);
@@ -92,7 +99,6 @@ void onReceive(int packetSize){
     A segunda é o conteudo da mensagem, como método de seguranca
     para garantir que todo o pacote chegou.  
   */
-  
   if( packetSize == 0 ) return;  // se nenhuma mensagem foi recebida sai da funcao
   byte incomingLength = LoRa.read(); // tamanho da mensagem
   String incoming = "";
@@ -128,8 +134,8 @@ void setup(){
   // Ativa crc
   LoRa.enableCrc();
   // Ativa o recebimento de pacotes
-  LoRa.receive();
   LoRa.onReceive(onReceive); // callback
+  LoRa_rxMode();  // seta o esp32 apenas para recebimento de informacoes dos Nodes
   Serial.println("LoRa inicializado com sucesso");
   Serial.println("Aguardando conexão");
 
