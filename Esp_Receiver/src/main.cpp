@@ -6,7 +6,7 @@
 #include <SSD1306.h>
 #include <list>
 
-#define BAND 915E6
+#define BAND 921E6
 
 const char* ssid = "LaboratorioE117";
 const char* password = "LAB@117";
