@@ -386,6 +386,69 @@ void Proto_Socket() // funcao para receber as informaçoes do celular
   }
 }
 
+
+
+void enviar_info(int intervalo)
+{
+  if (millis() - lastSendTime > intervalo)
+  {
+    temp_DHT();
+    info = localAddress + "?" + String(temperatura) + "?" + String(humidade) + "?" + String(Irms) + "?" + String(potencia) + "?" + String(kwhTotal_Acc, 5);
+
+    Serial.println("Enviou as informações");
+
+    
+    enviar_Mensagem(info);
+    lastSendTime = millis();
+  }
+  vTaskDelay(100 / portTICK_PERIOD_MS);
+  LoRa_rxMode();
+  vTaskDelay(50 / portTICK_PERIOD_MS);
+}
+
+void Comunicacao_Server(void *pvParameters)
+{
+  int counter = 1;
+  while (true)
+  {
+    //Serial.println(xPortGetCoreID());
+    // Calcula quantidade de tempo desde a última measurment realpower.
+    ltmillis = tmillis;
+    tmillis = millis();
+    timems = tmillis - ltmillis;
+    double Irms1 = SCT013.calcIrms(1480);
+    double Irms2 = SCT013.calcIrms(1480);
+    double Irms3 = SCT013.calcIrms(1480);
+    Irms = (Irms1 + Irms2 + Irms3) / 3;
+    // Calcula o valor da Corrente
+    Serial.println("Irms = " + String(Irms, 2));
+    if (Irms >= 0 and Irms <= 0.5)
+    {
+      Irms = 0;
+      if (counter == 0) {
+        interval = intervald;
+      } else {
+        enviar_info(0);
+      }
+      counter = 0;
+    } else {
+      interval = intervall;
+      Irms = Irms;
+      counter = 1;
+    }
+
+    potencia = Irms * tensao; // Calcula o valor da Potencia Instantanea
+    // Calcular o número de hoje de kWh consumido.
+    kwhTotal = kwhTotal + ((potencia / 1000.0) * 1.0 / 3600.0 * (timems / 1000.0));
+    kwhTotal_Acc = kwhTotal_Acc + kwhTotal;
+    //vlreais = kwhTotal * 0.35;
+    //vlreais_Acc = vlreais_Acc + vlreais;
+    
+    enviar_info(interval);
+
+  }
+}
+
 void loop() {
   Proto_Socket();
 }
