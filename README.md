@@ -9,7 +9,15 @@ Caminho para adicionar bibliotecas e arquivo do visual code para editar.
 
 -> C:\Users\<SEU_USUARIO>\.platformio
 
+## <b>Comunicação Gateway-Node</b>
 
+Gateway: 
+RX:LoRa.disableInvertIQ();
+TX:LoRa.enableInvertIQ(); 
+
+Node:
+RX:LoRa.enableInvertIQ(); 
+TX:LoRa.disableInvertIQ(); 
 
 ## <b>Comandos Banco -> quadro:</b>
 
