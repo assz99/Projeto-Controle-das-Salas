@@ -41,7 +41,7 @@ int tensao = 220; // TENSÃO NOMINAL
 int potencia; // POTENCIA CALCULADA
 
 /////////////////////////
-
+SimpleDHT22 dht22(23);
 //Cria variaveis globais
 double kwhTotal=0;
 double kwhTotal_Acc=0;
@@ -341,7 +341,7 @@ void enviar_Mensagem(String mensagem){
   LoRa.beginPacket();            // Inicia o pacote da mensagem
   LoRa.write(mensagem.length()); // Tamanho da mensagem em bytes
   LoRa.print(mensagem);          // Vetor da mensagem
-  LoRa.enmdPacket();              // Finaliza o pacote e envia
+  LoRa.endPacket();              // Finaliza o pacote e envia
   Serial.println(mensagem);
   LoRa_rxMode();
 }
