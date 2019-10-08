@@ -27,7 +27,7 @@ macDoQuadro!nomeSala!valor(0 ou 1)
 
 ## <b>Comandos Banco -> Sala:</b>
 
-macDaSala!comando!valor
+macDaSala!comando!valor   (MAC_banco = 71:75:61:64:72:6f)
 
 SE o comando for "rt" = {"2"-"3" para desligar e ligar ar} e {"17 até 27" para temperatura}
 
