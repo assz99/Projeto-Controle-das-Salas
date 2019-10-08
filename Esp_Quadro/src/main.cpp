@@ -1,5 +1,6 @@
 #include <SPI.h>
 #include <LoRa.h>
+#include <SSD1306.h>
 #define BAND 921E6 //Frequencia da rede LoRa em 921 MHz
 
 const int LORA_SCK_PIN = 5;
@@ -19,6 +20,8 @@ const int DISPLAY_SCL_PIN = 15;
 const int DISPLAY_RST_PIN = 16;
 SSD1306 display(DISPLAY_ADDRESS_PIN, DISPLAY_SDA_PIN, DISPLAY_SCL_PIN);
 
+String salas[10] = {"B001","B002","B003","B004","B005","B006","B007","B008","B009","B010"};
+int portaSala[10] = {13,12,14,27,26,25,33,32,35,34};
 void setupDisplay()
 {
   //O estado do GPIO16 é utilizado para controlar o display OLED
@@ -82,6 +85,12 @@ void LoRa_txMode(){
   LoRa.disableInvertIQ();               // normal mode
 }
 
+void setPinos(){
+  for(int i =0, i<10,i++){
+  pinMode(portaSala[i],OUTPUT);
+  digitalWrite(portaSala,LOW);
+  }
+}
 void setup() {
   setupDisplay();
   delay(3000); //Aguarda 3 segundos
@@ -95,16 +104,38 @@ void setup() {
     Serial.println("LoRa nao conseguiu inicializar..");
     while (true);
   }  
+  setPinos();
+  LoRa.onReceive(onReceive); // callback
+  LoRa_rxMode();
 }
 
-void comando_quadro(String macUS,int comando){  
-    
-
-
-
-
-
-
+void comando_quadro(String macUser,int comando){  
+  if(comando != 0 && comando != 1){
+    Serial.println("Valor recebido nao conhecido");
+    return;
+  }
+  int usuario;
+  if(macUser == salas[0]){
+    usuario = 0;      
+  }else if(macUser == salas[1]){
+    usuario = 1; 
+  }else if(macUser == salas[2]){
+    usuario = 2;
+  }else if(macUser == salas[3]){
+    usuario = 3;
+  }else if(macUser == salas[4]){
+    usuario = 4;
+  }else if(macUser == salas[5]){
+    usuario = 5;
+  }else if(macUser == salas[6]){
+    usuario = 6;
+  }else if(macUser == salas[7]){
+    usuario = 7;
+  }else if(macUser == salas[9]){
+    usuario = 9;
+  }
+  Serial.println("Sala "+macUser+ " Alterada.");
+  digitalWrite(portaSala{usuario],comando);
 }
 
 
