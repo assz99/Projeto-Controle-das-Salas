@@ -29,10 +29,6 @@ macDoQuadro!nomeSala!valor(0 ou 1)
 
 macDaSala!comando!valor   
 
-SE o comando for "rt" = {"2"-"3" para desligar e ligar ar} e {"17 até 27" para temperatura}
-
-SE o comando for "t" = {"5" - "10" - "15" - "30"} 
-
 ## <b>Comandos Sala -> Banco:</b>
 
 macPadraoDoReceiver!info!macLocal!temperatura!humidade!corrente!potencia!kwh
@@ -40,6 +36,12 @@ macPadraoDoReceiver!info!macLocal!temperatura!humidade!corrente!potencia!kwh
 Mensagem do app: comando!sala!valor
 
 Envia dai: macDoBanco!comando!sala!valor
+
+SE o comando for "rt" = {"2"-"3" para desligar e ligar ar} e {"17 até 27" para temperatura}
+
+SE o comando for "t" = {"5" - "10" - "15" - "30"} 
+
+///////////////////////////////////////////////////////////////////
 
 Comando de confirmação: macRemetente!confir!macDestinatario
 
