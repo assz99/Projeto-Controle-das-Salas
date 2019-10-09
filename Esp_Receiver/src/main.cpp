@@ -19,7 +19,7 @@ int BROKER_PORT = 1883;
 
 String mensagem;
 String localAddress;
-
+String MAC_LOCAL = "62:61:6e:63:6f:0d:0a";
 char info_topico[25];
 
 const int LORA_SCK_PIN  = 5;
@@ -152,7 +152,7 @@ void setup(){
   Serial.println("WiFi conectado com sucesso: ");
 
   // Contrucao do MAC do hardware para MAC byte
-  String localMac = WiFi.macAddress();
+  String localMac = MAC_LOCAL;
   char characterMacLocal[18];
   String(localMac).toCharArray(characterMacLocal, 18);
   char* infoMacLocal[6]; 

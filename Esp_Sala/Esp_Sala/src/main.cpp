@@ -20,7 +20,7 @@ const int LORA_DI00_PIN = 26;
 String localAddress; // endereço deste dipositivo
 String endBroadcast = "0xE117" ; // endereço de broadcast
 String Mac_Local_Full, MAC_LOCAL;
-
+String macBanco = "62:61:6e:63:6f:0d:0a";
 //variaveis que indicam o núcleo
 //static uint8_t taskCoreZero = 0;
 //static uint8_t taskCoreOne = 1;
@@ -285,7 +285,7 @@ void onReceive(int packetSize) {
     return;                             // skip rest of function
   }
   if(comando == "rt"){
-    comando_ar(valorComando);
+    comando_ar(valorComando); 
 
   }
 }
@@ -372,8 +372,8 @@ void Proto_Socket() // funcao para receber as informaçoes do celular
         cl.print("\n...IP do Servidor: ");
         cl.print(WiFi.softAPIP());
         cl.print("\n...Sua mensagem: " + req + "\n");
-
-        enviar_Mensagem(req);
+        String resultado = macBanco+"!"+req;
+        enviar_Mensagem(resultado);
 
       }
     }
@@ -393,7 +393,7 @@ void enviar_info(int intervalo)
   if (millis() - lastSendTime > intervalo)
   {
     temp_DHT();
-    info = localAddress + "?" + String(temperatura) + "?" + String(humidade) + "?" + String(Irms) + "?" + String(potencia) + "?" + String(kwhTotal_Acc, 5);
+    info = macBanco+"!"+"info"+"!"+localAddress + "!" + String(temperatura) + "!" + String(humidade) + "!" + String(Irms) + "!" + String(potencia) + "!" + String(kwhTotal_Acc, 5);
 
     Serial.println("Enviou as informações");
 
