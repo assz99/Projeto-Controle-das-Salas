@@ -35,7 +35,7 @@ SE o comando for "t" = {"5" - "10" - "15" - "30"}
 
 ## <b>Comandos Sala -> Banco:</b>
 
-macPadraoDoReceiver!macLocal!temperatura!humidade!corrente!potencia!kwh
+macPadraoDoReceiver!comando!macLocal!temperatura!humidade!corrente!potencia!kwh
 
 Mensagem do app: comando!sala!valor
 
