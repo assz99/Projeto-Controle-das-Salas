@@ -87,15 +87,51 @@ void LoRa_txMode(){
 }
 
 void setPinos(){
-  for(int i =0, i<10,i++){
+  for(int i =0; i<10;i++){
   pinMode(portaSala[i],OUTPUT);
-  digitalWrite(portaSala,LOW);
+  digitalWrite(portaSala[i],LOW);
   }
 }
+
+void onReceive(int packetSize) {
+  if (packetSize == 0) return;          // Se nao tiver um pacote, sai
+  byte incomingLength = LoRa.read();
+  String incoming = "";                 // variavel para o pacote
+  while (LoRa.available()) {            // can't use readString() in callback, so
+    incoming += (char)LoRa.read();      // add bytes one by one
+  }
+  if (incomingLength != incoming.length())
+  {
+    // checa se chegou toda a mensagem
+    Serial.println("erro!: o tamanho da mensagem nao condiz com o conteudo!");
+    return;
+  }
+
+
+  char chIncoming[50];
+  String(incoming).toCharArray(chIncoming, 50);
+  char *infoIncoming[3];
+  infoIncoming[0] = strtok(chIncoming, "!");
+  infoIncoming[1] = strtok(NULL, "!");
+  infoIncoming[2] = strtok(NULL, "!");
+  String macMes = String(infoIncoming[0]);
+  String sala = String(infoIncoming[1]); 
+  int valorComando = String(infoIncoming[2]).toInt();
+ 
+  Serial.println("Mensagem: "+incoming);
+  Serial.println();
+
+  if (macMes != localAddress && macMes != endBroadcast) {
+    Serial.println("Esta mensagem nao e pra mim.");
+    return;                             // skip rest of function
+  }
+  comando_quadro(macMes,valorComando);
+} 
+
 void setup() {
   setupDisplay();
   delay(3000); //Aguarda 3 segundos
-  SCT013.current(pinSCT, 5.4);
+  
   Serial.begin(115200);
 
   LoRa.setPins(18, 14, 26);
@@ -136,45 +172,12 @@ void comando_quadro(String macUser,int comando){
     usuario = 9;
   }
   Serial.println("Sala "+macUser+ " Alterada.");
-  digitalWrite(portaSala{usuario],comando);
+  digitalWrite(portaSala[usuario],comando);
 }
 
 
 
-void onReceive(int packetSize) {
-  if (packetSize == 0) return;          // Se nao tiver um pacote, sai
-  byte incomingLength = LoRa.read();
-  String incoming = "";                 // variavel para o pacote
-  while (LoRa.available()) {            // can't use readString() in callback, so
-    incoming += (char)LoRa.read();      // add bytes one by one
-  }
-  if (incomingLength != incoming.length())
-  {
-    // checa se chegou toda a mensagem
-    Serial.println("erro!: o tamanho da mensagem nao condiz com o conteudo!");
-    return;
-  }
 
-
-  char chIncoming[50];
-  String(incoming).toCharArray(chIncoming, 50);
-  char *infoIncoming[3];
-  infoIncoming[0] = strtok(chIncoming, "!");
-  infoIncoming[1] = strtok(NULL, "!");
-  infoIncoming[2] = strtok(NULL, "!");
-  String macMes = String(infoIncoming[0]);
-  String sala = String(infoIncoming[1]); 
-  int valorComando = String(infoIncoming[2]).toInt();
- 
-  Serial.println("Mensagem: "+incoming);
-  Serial.println();
-
-  if (macMes != localAddress && macMes != endBroadcast) {
-    Serial.println("Esta mensagem nao e pra mim.");
-    return;                             // skip rest of function
-  }
-  comando_quadro(macMes,valorComando);
-} 
 
 void enviar_Mensagem(String mensagem){
   LoRa_txMode();
