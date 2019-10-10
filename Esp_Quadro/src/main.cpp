@@ -13,6 +13,7 @@ String localAddress; // endereço deste dipositivo
 String endBroadcast = "0xE117" ; // endereço de broadcast
 String Mac_Local_Full ; //mac criado para padrao do banco
 String MAC_LOCAL = "71:75:61:64:72:6f";
+String macBanco = "62616E636F0D0A";
 //Variável para controlar o display
 const int DISPLAY_ADDRESS_PIN = 0x3c;
 const int DISPLAY_SDA_PIN = 4;

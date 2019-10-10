@@ -20,7 +20,7 @@ const int LORA_DI00_PIN = 26;
 String localAddress; // endereço deste dipositivo
 String endBroadcast = "0xE117" ; // endereço de broadcast
 String Mac_Local_Full, MAC_LOCAL;
-String macBanco = "62:61:6e:63:6f:0d:0a";
+String macBanco = "62616E636F0D0A";
 //variaveis que indicam o núcleo
 //static uint8_t taskCoreZero = 0;
 //static uint8_t taskCoreOne = 1;

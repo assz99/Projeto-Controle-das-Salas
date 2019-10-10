@@ -19,7 +19,7 @@ int BROKER_PORT = 1883;
 
 String mensagem;
 String localAddress;
-String MAC_LOCAL = "62:61:6e:63:6f:0d:0a";
+String MAC_LOCAL = "62:61:6E:63:6F:0D:0A";
 char info_topico[25];
 
 const int LORA_SCK_PIN  = 5;
@@ -109,11 +109,12 @@ void onReceive(int packetSize){
     Serial.println("Erro! o tamanho da mensagem não condiz com o conteudo");
     return;
   }
-
   Serial.println("Tamanho da mensagem: " + String(incomingLength ) );
   Serial.println("Mensagem: " + incoming);
   Serial.println();
-
+  if(incoming.indexOf(localAddress) == -1){ //Caso a mensagem nao for para ele sai da função
+    return;
+  }
   String addressWeb = "http://"+IP+"/acoes.php?atualizar=";
   addressWeb += incoming;
   msg = addressWeb;
