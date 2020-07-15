@@ -57,4 +57,4 @@ SE o comando for "t" = {"5" - "10" - "15" - "30"}
 Comando de confirmação: macRemetente!confir!macDestinatario
 
 MAC padrão do Quadro :(MAC_quadro = 71:75:61:64:72:6f)
-MAC padrão do Gateway : (MAC_banco = 62:61:6e:63:6f:0d:0a)  // não está atualizado (15/07/2020)
+MAC padrão do Gateway : (MAC_gateway = b8:27:eb:8e:94:f2)  // ESTÁ atualizado (15/07/2020)
